@@ -175,7 +175,7 @@ function start_vm {
       jq -r .token)
   echo "✅ Successfully got the GitHub Runner registration token"
 
-  VM_ID="gce-gh-runner-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+  VM_ID="gce-gh-runner-${RANDOM}"
   service_account_flag=$([[ -z "${runner_service_account}" ]] || echo "--service-account=${runner_service_account}")
   image_project_flag=$([[ -z "${image_project}" ]] || echo "--image-project=${image_project}")
   image_flag=$([[ -z "${image}" ]] || echo "--image=${image}")
@@ -286,6 +286,7 @@ function start_vm {
   gh_repo_owner="$(truncate_to_label "${GITHUB_REPOSITORY_OWNER}")"
   gh_repo="$(truncate_to_label "${GITHUB_REPOSITORY##*/}")"
   gh_run_id="${GITHUB_RUN_ID}"
+  gh_job="$(truncate_to_label ${GITHUB_JOB})"
 
   gcloud compute instances create ${VM_ID} \
     --zone=${machine_zone} \
@@ -302,7 +303,7 @@ function start_vm {
     ${subnet_flag} \
     ${accelerator} \
     ${maintenance_policy_flag} \
-    --labels=gh_ready=0,gh_repo_owner="${gh_repo_owner}",gh_repo="${gh_repo}",gh_run_id="${gh_run_id}" \
+    --labels=gh_ready=0,gh_repo_owner="${gh_repo_owner}",gh_repo="${gh_repo}",gh_run_id="${gh_run_id}",gh_job="${gh_job}" \
     --metadata=startup-script="$startup_script" \
     && echo "label=${VM_ID}" >> $GITHUB_OUTPUT
 
